@@ -1,0 +1,15 @@
+# Environments
+.env
+
+# Routers
+routers.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Docker
+Dockerfile
+docker-compose.yml
