@@ -10,6 +10,3 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Docker
-Dockerfile
-docker-compose.yml

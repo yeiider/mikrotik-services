@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mikrotik-app:
+    build: .
+    image: mikrotik-metrics:latest
+    container_name: mikrotik-metrics-app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Override .env for Docker internal networking
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=my-super-secret-auth-token
+    depends_on:
+      - influxdb
+    volumes:
+      - ./routers.json:/app/routers.json
+    restart: unless-stopped
+    networks:
+      - mikrotik-net
+
+  influxdb:
+    image: influxdb:2
+    container_name: mikrotik-metrics-influxdb
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb2-data:/var/lib/influxdb2
+      - influxdb2-config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password123
+      - DOCKER_INFLUXDB_INIT_ORG=ispgo
+      - DOCKER_INFLUXDB_INIT_BUCKET=mikrotik_metrics
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+    restart: unless-stopped
+    networks:
+      - mikrotik-net
+
+volumes:
+  influxdb2-data:
+  influxdb2-config:
+
+networks:
+  mikrotik-net:
+    driver: bridge
