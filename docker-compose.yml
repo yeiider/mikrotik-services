@@ -16,7 +16,7 @@ services:
     # Volúmenes eliminados para evitar el error de /opt/routers.json
     restart: unless-stopped
     networks:
-      - red_publica_isp
+      - mikrotik-net
 
   influxdb:
     image: influxdb:2
@@ -37,15 +37,12 @@ services:
       - INFLUXDB_BUCKET=mikrotik_metrics
     restart: unless-stopped
     networks:
-      - red_publica_isp
+      - mikrotik-net
 
 volumes:
   influxdb2-data:
   influxdb2-config:
 
-#networks:
-#  mikrotik-net:
-#    driver: bridge
 networks:
-  red_publica_isp:
-    external: true
+  mikrotik-net:
+    driver: bridge
