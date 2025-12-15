@@ -43,6 +43,9 @@ volumes:
   influxdb2-data:
   influxdb2-config:
 
+#networks:
+#  mikrotik-net:
+#    driver: bridge
 networks:
-  mikrotik-net:
-    driver: bridge
+  red_publica_isp:
+    external: true
