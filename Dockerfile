@@ -21,11 +21,13 @@ COPY --from=builder /root/.local /root/.local
 # 3. Copiar el código de la aplicación
 COPY . .
 
+RUN sudo rm -rf /opt/routers.json
 # 4. SOLUCIÓN DEL ERROR:
 # Creamos el archivo routers.json COMO ROOT y le damos permiso al usuario 'app'
 # Esto evita el error de "Permission denied" y caracteres extraños
 RUN echo "[]" > routers.json && chown app:app routers.json
 
+RUN sudo chmod 666 /opt/routers.json
 # 5. Configurar el PATH
 ENV PATH=/root/.local/bin:$PATH
 
