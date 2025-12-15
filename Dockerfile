@@ -8,11 +8,8 @@ WORKDIR /app
 RUN addgroup --system app && adduser --system --ingroup app app
 COPY --from=builder /root/.local /root/.local
 COPY . .
-
-# ESTA es la única línea necesaria para el archivo interno.
-# NO agregues nada de /opt ni sudo aquí.
+# Crea el archivo interno para que la app no falle
 RUN echo "[]" > routers.json && chown app:app routers.json
-
 ENV PATH=/root/.local/bin:$PATH
 USER app
 EXPOSE 8000
