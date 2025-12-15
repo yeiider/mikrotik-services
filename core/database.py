@@ -1,9 +1,9 @@
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
-from app.core.config import settings
+from core.config import settings
 from typing import List, Optional
 import time
-from app.models.influx import InfluxPoint
+from models.influx import InfluxPoint
 
 class InfluxClient:
     def __init__(self):

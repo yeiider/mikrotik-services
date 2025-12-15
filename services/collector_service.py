@@ -4,11 +4,11 @@ import json
 import os
 from typing import List
 from datetime import datetime
-from app.services.mikrotik_service import mikrotik_service
-from app.core.database import influx_db
-from app.models.influx import InfluxPoint
-from app.core.config import settings
-from app.models.router_config import RouterConfig
+from services.mikrotik_service import mikrotik_service
+from core.database import influx_db
+from models.influx import InfluxPoint
+from core.config import settings
+from models.router_config import RouterConfig
 
 logger = logging.getLogger(__name__)
 

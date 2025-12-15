@@ -3,8 +3,8 @@ from typing import List, Optional
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
 import logging
-from app.models.mikrotik import QueueMetrics
-from app.models.router_config import RouterConfig
+from models.mikrotik import QueueMetrics
+from models.router_config import RouterConfig
 
 # Configurar logger para ver errores reales en consola
 logger = logging.getLogger(__name__)

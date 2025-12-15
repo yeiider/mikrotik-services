@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
 from io import BytesIO
-from app.models.mikrotik import (
+from models.mikrotik import (
     MikrotikCredentials,
     ConnectionStatus,
     QueueListResponse,
@@ -11,7 +11,7 @@ from app.models.mikrotik import (
     DhcpLease,
     LogEntry
 )
-from app.services.mikrotik_client import MikrotikClient
+from services.mikrotik_client import MikrotikClient
 
 router = APIRouter()
 

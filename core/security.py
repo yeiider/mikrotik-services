@@ -1,7 +1,7 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
-from app.core.config import settings
+from core.config import settings
 import logging
 
 logger = logging.getLogger(__name__)

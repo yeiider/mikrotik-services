@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, BackgroundTasks
-from app.services.collector_service import collector_service
-from app.core.database import influx_db
+from services.collector_service import collector_service
+from core.database import influx_db
 from typing import List, Dict, Any
 
 router = APIRouter()

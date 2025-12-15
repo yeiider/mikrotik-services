@@ -1,7 +1,7 @@
 from fastapi import APIRouter
-from app.services.mikrotik_service import mikrotik_service
-from app.services.collector_service import collector_service
-from app.core.database import influx_db
+from services.mikrotik_service import mikrotik_service
+from services.collector_service import collector_service
+from core.database import influx_db
 import asyncio
 
 router = APIRouter()

@@ -2,7 +2,7 @@ import routeros_api
 import csv
 from io import StringIO
 from typing import List, Optional, Dict, Any
-from app.models.mikrotik import (
+from models.mikrotik import (
     MikrotikCredentials,
     ConnectionStatus,
     Queue,
