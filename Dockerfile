@@ -3,7 +3,6 @@ FROM python:3.10-slim as builder
 
 WORKDIR /code
 
-# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
@@ -13,26 +12,26 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Create a non-root user
+# 1. Crear el usuario del sistema
 RUN addgroup --system app && adduser --system --ingroup app app
-USER app
 
-# Copy installed dependencies from builder stage
+# 2. Copiar dependencias compiladas
 COPY --from=builder /root/.local /root/.local
 
+# 3. Copiar el código de la aplicación
 COPY . .
 
-# -----------------------------------------------------------------------------
-# NUEVO: Crear un routers.json con una lista vacía por defecto
-# Esto evita que la app se rompa si no montas el volumen externo.
-RUN echo "[]" > routers.json  # <--- AGREGA ESTA LÍNEA
-# -----------------------------------------------------------------------------
+# 4. SOLUCIÓN DEL ERROR:
+# Creamos el archivo routers.json COMO ROOT y le damos permiso al usuario 'app'
+# Esto evita el error de "Permission denied" y caracteres extraños
+RUN echo "[]" > routers.json && chown app:app routers.json
 
-# Set the path to include the installed packages
+# 5. Configurar el PATH
 ENV PATH=/root/.local/bin:$PATH
 
-# Expose the port
+# 6. Cambiar al usuario limitado (Hacemos esto AL FINAL)
+USER app
+
 EXPOSE 8000
 
-# Run the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
