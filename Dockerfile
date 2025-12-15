@@ -20,8 +20,13 @@ USER app
 # Copy installed dependencies from builder stage
 COPY --from=builder /root/.local /root/.local
 
-# Copy the application code
 COPY . .
+
+# -----------------------------------------------------------------------------
+# NUEVO: Crear un routers.json con una lista vacía por defecto
+# Esto evita que la app se rompa si no montas el volumen externo.
+RUN echo "[]" > routers.json  # <--- AGREGA ESTA LÍNEA
+# -----------------------------------------------------------------------------
 
 # Set the path to include the installed packages
 ENV PATH=/root/.local/bin:$PATH

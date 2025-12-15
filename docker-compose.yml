@@ -2,19 +2,33 @@ version: '3.8'
 
 services:
   mikrotik-app:
+    # IMPORTANTE: Esto le dice a Portainer "Usa el Dockerfile que está en esta carpeta (.)"
     build: .
-    image: mikrotik-metrics:latest
+
+    # Puedes BORRAR la línea 'image' si quieres.
+    # Si la dejas, Docker solo la usará para ponerle ese nombre a la imagen que construya,
+    # pero ya no intentará descargarla de internet si 'build' está presente.
+    # image: mikrotik-metrics:latest
+
     container_name: mikrotik-metrics-app
+
+    # El puerto corregido: 8099 externo -> 8000 interno
     ports:
       - "8099:8000"
+
     environment:
-      # Override .env for Docker internal networking
       - INFLUXDB_URL=http://influxdb:8086
+      # Recuerda que las contraseñas ideales van en variables de Portainer, no aquí
       - INFLUXDB_TOKEN=my-super-secret-auth-token
+
     depends_on:
       - influxdb
+
     volumes:
-      - ./routers.json:/app/routers.json
+      # Aquí usamos la ruta absoluta del servidor que hablamos antes
+      # para proteger tus credenciales reales
+      - /opt/routers.json:/app/routers.json
+
     restart: unless-stopped
     networks:
       - mikrotik-net
