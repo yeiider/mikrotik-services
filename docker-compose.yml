@@ -6,7 +6,7 @@ services:
     image: mikrotik-metrics:latest
     container_name: mikrotik-metrics-app
     ports:
-      - "8000:8000"
+      - "8099:8000"
     environment:
       # Override .env for Docker internal networking
       - INFLUXDB_URL=http://influxdb:8086
