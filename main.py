@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.api.v1.routers import metrics, health, mikrotik
-from app.services.collector_service import collector_service
-from app.core.config import settings
-from app.core.database import influx_db
+
+# --- CORRECCIONES DE IMPORT (Quitamos "app.") ---
+from api.v1.routers import metrics, health, mikrotik
+from services.collector_service import collector_service
+from core.config import settings
+from core.database import influx_db
+# ------------------------------------------------
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,8 +35,10 @@ app.add_middleware(
 )
 
 # Security Middleware
-from app.core.security import SecurityMiddleware
+# --- CORRECCIÓN AQUÍ TAMBIÉN ---
+from core.security import SecurityMiddleware
 app.add_middleware(SecurityMiddleware)
+# -------------------------------
 
 # Routers
 app.include_router(metrics.router, prefix=f"{settings.API_V1_STR}/metrics", tags=["Metrics"])
@@ -51,7 +56,7 @@ async def root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
-        "app.main:app",
+        "main:app",
         host="0.0.0.0",
         port=8000,
         reload=True
