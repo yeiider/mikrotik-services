@@ -9,6 +9,8 @@ services:
     environment:
       - INFLUXDB_URL=http://influxdb:8086
       - INFLUXDB_TOKEN=my-super-secret-auth-token
+      - INFLUXDB_ORG=ispgo
+      - INFLUXDB_BUCKET=mikrotik_metrics
     depends_on:
       - influxdb
     # Volúmenes eliminados para evitar el error de /opt/routers.json
@@ -31,6 +33,8 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=ispgo
       - DOCKER_INFLUXDB_INIT_BUCKET=mikrotik_metrics
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=my-super-secret-auth-token
+      - INFLUXDB_ORG=ispgo
+      - INFLUXDB_BUCKET=mikrotik_metrics
     restart: unless-stopped
     networks:
       - mikrotik-net
