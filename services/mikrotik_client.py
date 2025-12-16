@@ -420,9 +420,13 @@ class MikrotikClient:
         except Exception as e:
             return {'success': False, 'message': str(e)}
 
-    def bind_dhcp_lease(self, mac_address: str, ip_address: str, server: str, comment: str) -> Dict[str, Any]:
+    def bind_dhcp_lease(self, mac_address: str, ip_address: str, server: str = None, comment: str = None) -> Dict[str, Any]:
         """Amarra una IP a una MAC (Static Lease)"""
         try:
+            # Validar parámetros obligatorios
+            if not mac_address or not ip_address:
+                return {'success': False, 'message': 'MAC address and IP address are required'}
+
             connection = self.connect()
             api = connection.get_api()
             lease_resource = api.get_resource('/ip/dhcp-server/lease')
@@ -448,22 +452,25 @@ class MikrotikClient:
                 if existing_lease.get('dynamic') == 'true':
                     lease_resource.call('make-static', {'numbers': lease_id})
 
-                # Actualizar datos
+                # Actualizar datos - solo incluir parámetros no vacíos
                 update_params = {'.id': lease_id, 'address': ip_address}
-                if server:
-                    update_params['server'] = server
-                if comment:
-                    update_params['comment'] = comment
+                if server and str(server).strip():
+                    update_params['server'] = str(server)
+                if comment and str(comment).strip():
+                    update_params['comment'] = str(comment)
 
                 lease_resource.set(**update_params)
                 action = "updated"
             else:
                 # Si no existe, creamos un nuevo lease estático
-                add_params = {'mac-address': mac_address, 'address': ip_address}
-                if server:
-                    add_params['server'] = server
-                if comment:
-                    add_params['comment'] = comment
+                add_params = {
+                    'mac-address': str(mac_address),
+                    'address': str(ip_address)
+                }
+                if server and str(server).strip():
+                    add_params['server'] = str(server)
+                if comment and str(comment).strip():
+                    add_params['comment'] = str(comment)
 
                 lease_resource.add(**add_params)
                 action = "created"
@@ -480,9 +487,13 @@ class MikrotikClient:
         except Exception as e:
             return {'success': False, 'message': str(e)}
 
-    def create_simple_queue(self, name: str, target: str, max_limit: str, comment: str) -> Dict[str, Any]:
+    def create_simple_queue(self, name: str, target: str, max_limit: str, comment: str = None) -> Dict[str, Any]:
         """Crea o actualiza una Simple Queue"""
         try:
+            # Validar parámetros obligatorios
+            if not name or not target or not max_limit:
+                return {'success': False, 'message': 'Name, target, and max_limit are required'}
+
             connection = self.connect()
             api = connection.get_api()
             queue_resource = api.get_resource('/queue/simple')
@@ -504,17 +515,25 @@ class MikrotikClient:
                 # Actualizar queue existente
                 queue_id = existing_queue.get('.id')
 
-                update_params = {'.id': queue_id, 'target': target, 'max-limit': max_limit}
-                if comment:
-                    update_params['comment'] = comment
+                update_params = {
+                    '.id': queue_id,
+                    'target': str(target),
+                    'max-limit': str(max_limit)
+                }
+                if comment and str(comment).strip():
+                    update_params['comment'] = str(comment)
 
                 queue_resource.set(**update_params)
                 action = "updated"
             else:
                 # Crear nueva queue
-                add_params = {'name': name, 'target': target, 'max-limit': max_limit}
-                if comment:
-                    add_params['comment'] = comment
+                add_params = {
+                    'name': str(name),
+                    'target': str(target),
+                    'max-limit': str(max_limit)
+                }
+                if comment and str(comment).strip():
+                    add_params['comment'] = str(comment)
 
                 queue_resource.add(**add_params)
                 action = "created"
