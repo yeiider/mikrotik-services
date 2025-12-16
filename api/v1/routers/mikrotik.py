@@ -9,7 +9,10 @@ from models.mikrotik import (
     SystemResources,
     InterfaceStats,
     DhcpLease,
-    LogEntry
+    LogEntry,
+    BindDhcpLeaseRequest,
+    CreateSimpleQueueRequest,
+    ProvisionResponse
 )
 from services.mikrotik_client import MikrotikClient
 
@@ -260,6 +263,145 @@ async def get_logs(credentials: MikrotikCredentials):
             )
 
         return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno: {str(e)}"
+        )
+
+
+@router.get("/health")
+async def health_check():
+    """
+    Endpoint de health check para verificar que el servicio está activo
+    """
+    return {
+        "status": "healthy",
+        "service": "mikrotik-api",
+        "version": "1.0.0"
+    }
+
+
+@router.post("/dhcp/bind", response_model=ProvisionResponse)
+async def bind_dhcp_lease(request: BindDhcpLeaseRequest):
+    """
+    Amarra una IP a una MAC (Static Lease)
+    """
+    try:
+        client = MikrotikClient(request.credentials)
+        result = client.bind_dhcp_lease(
+            mac_address=request.mac_address,
+            ip_address=request.ip_address,
+            server=request.server,
+            comment=request.comment
+        )
+
+        if not result['success']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.get('message', 'Error al hacer bind del lease')
+            )
+
+        return ProvisionResponse(
+            success=True,
+            message=result['message'],
+            data=result
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno: {str(e)}"
+        )
+
+
+@router.post("/queues/create", response_model=ProvisionResponse)
+async def create_simple_queue(request: CreateSimpleQueueRequest):
+    """
+    Crea o actualiza una Simple Queue
+    """
+    try:
+        client = MikrotikClient(request.credentials)
+        result = client.create_simple_queue(
+            name=request.name,
+            target=request.target,
+            max_limit=request.max_limit,
+            comment=request.comment
+        )
+
+        if not result['success']:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.get('message', 'Error al crear la queue')
+            )
+
+        return ProvisionResponse(
+            success=True,
+            message=result['message'],
+            data=result
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno: {str(e)}"
+        )
+
+
+@router.post("/provision/simple-flow", response_model=ProvisionResponse)
+async def provision_simple_flow(
+    lease_request: BindDhcpLeaseRequest,
+    queue_request: CreateSimpleQueueRequest
+):
+    """
+    Flujo completo: Amarrar IP a MAC y luego crear Simple Queue
+    Nota: Se asume que las credenciales son las mismas para ambas operaciones.
+    Se usarán las credenciales del lease_request.
+    """
+    try:
+        client = MikrotikClient(lease_request.credentials)
+
+        # 1. Bind Lease
+        bind_result = client.bind_dhcp_lease(
+            mac_address=lease_request.mac_address,
+            ip_address=lease_request.ip_address,
+            server=lease_request.server,
+            comment=lease_request.comment
+        )
+
+        if not bind_result['success']:
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Fallo en bind lease: {bind_result.get('message')}"
+            )
+
+        # 2. Create Queue
+        # Usamos el target del queue_request tal cual viene
+        queue_result = client.create_simple_queue(
+            name=queue_request.name,
+            target=queue_request.target,
+            max_limit=queue_request.max_limit,
+            comment=queue_request.comment
+        )
+
+        if not queue_result['success']:
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Fallo en create queue: {queue_result.get('message')}"
+            )
+
+        return ProvisionResponse(
+            success=True,
+            message="Provisionamiento completado exitosamente",
+            data={
+                "lease": bind_result,
+                "queue": queue_result
+            }
+        )
     except HTTPException:
         raise
     except Exception as e:
