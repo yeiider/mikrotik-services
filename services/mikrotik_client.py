@@ -452,25 +452,34 @@ class MikrotikClient:
                 if existing_lease.get('dynamic') == 'true':
                     lease_resource.call('make-static', {'numbers': lease_id})
 
-                # Actualizar datos - solo incluir parámetros no vacíos
-                update_params = {'.id': lease_id, 'address': ip_address}
-                if server and str(server).strip():
-                    update_params['server'] = str(server)
-                if comment and str(comment).strip():
-                    update_params['comment'] = str(comment)
+                # Actualizar datos - IMPORTANTE: no enviar parámetros vacíos
+                update_params = {'.id': lease_id, 'address': str(ip_address)}
+
+                # Solo agregar server si tiene valor y no es vacío
+                if server is not None and str(server).strip() != '':
+                    update_params['server'] = str(server).strip()
+
+                # Solo agregar comment si tiene valor y no es vacío
+                if comment is not None and str(comment).strip() != '':
+                    update_params['comment'] = str(comment).strip()
 
                 lease_resource.set(**update_params)
                 action = "updated"
             else:
                 # Si no existe, creamos un nuevo lease estático
+                # IMPORTANTE: Solo parámetros obligatorios
                 add_params = {
-                    'mac-address': str(mac_address),
-                    'address': str(ip_address)
+                    'mac-address': str(mac_address).strip(),
+                    'address': str(ip_address).strip()
                 }
-                if server and str(server).strip():
-                    add_params['server'] = str(server)
-                if comment and str(comment).strip():
-                    add_params['comment'] = str(comment)
+
+                # Solo agregar server si tiene valor y no es vacío
+                if server is not None and str(server).strip() != '':
+                    add_params['server'] = str(server).strip()
+
+                # Solo agregar comment si tiene valor y no es vacío
+                if comment is not None and str(comment).strip() != '':
+                    add_params['comment'] = str(comment).strip()
 
                 lease_resource.add(**add_params)
                 action = "created"
@@ -485,7 +494,8 @@ class MikrotikClient:
                 'ip_address': ip_address
             }
         except Exception as e:
-            return {'success': False, 'message': str(e)}
+            import traceback
+            return {'success': False, 'message': f"{str(e)} - Traceback: {traceback.format_exc()}"}
 
     def create_simple_queue(self, name: str, target: str, max_limit: str, comment: str = None) -> Dict[str, Any]:
         """Crea o actualiza una Simple Queue"""
