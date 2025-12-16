@@ -12,7 +12,8 @@ from models.mikrotik import (
     LogEntry,
     BindDhcpLeaseRequest,
     CreateSimpleQueueRequest,
-    ProvisionResponse
+    ProvisionResponse,
+    ProvisionFlowRequest
 )
 from services.mikrotik_client import MikrotikClient
 
@@ -353,43 +354,46 @@ async def create_simple_queue(request: CreateSimpleQueueRequest):
 
 
 @router.post("/provision/simple-flow", response_model=ProvisionResponse)
-async def provision_simple_flow(
-    lease_request: BindDhcpLeaseRequest,
-    queue_request: CreateSimpleQueueRequest
-):
+async def provision_simple_flow(request: ProvisionFlowRequest):
     """
-    Flujo completo: Amarrar IP a MAC y luego crear Simple Queue
-    Nota: Se asume que las credenciales son las mismas para ambas operaciones.
-    Se usarán las credenciales del lease_request.
+    Flujo completo de provisionamiento: Amarrar IP a MAC y crear Simple Queue
+
+    Parámetros:
+    - credentials: Credenciales del RouterOS
+    - mac_address: MAC address del dispositivo (ej: "b4:64:15:02:4a:de")
+    - ip_address: IP a asignar (ej: "172.19.1.73")
+    - server: Nombre del servidor DHCP (opcional, ej: "vlan801")
+    - queue_name: Nombre de la queue (ej: "cliente_4")
+    - max_limit: Límite de velocidad upload/download (ej: "500M/500M")
+    - comment: Comentario opcional (ej: "JULIAN DAVID CAMPO ZUNIGA")
     """
     try:
-        client = MikrotikClient(lease_request.credentials)
+        client = MikrotikClient(request.credentials)
 
-        # 1. Bind Lease
+        # 1. Bind DHCP Lease
         bind_result = client.bind_dhcp_lease(
-            mac_address=lease_request.mac_address,
-            ip_address=lease_request.ip_address,
-            server=lease_request.server,
-            comment=lease_request.comment
+            mac_address=request.mac_address,
+            ip_address=request.ip_address,
+            server=request.server,
+            comment=request.comment
         )
 
         if not bind_result['success']:
-             raise HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Fallo en bind lease: {bind_result.get('message')}"
             )
 
-        # 2. Create Queue
-        # Usamos el target del queue_request tal cual viene
+        # 2. Create Simple Queue
         queue_result = client.create_simple_queue(
-            name=queue_request.name,
-            target=queue_request.target,
-            max_limit=queue_request.max_limit,
-            comment=queue_request.comment
+            name=request.queue_name,
+            target=request.ip_address,  # El target es la IP asignada
+            max_limit=request.max_limit,
+            comment=request.comment
         )
 
         if not queue_result['success']:
-             raise HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Fallo en create queue: {queue_result.get('message')}"
             )

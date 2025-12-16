@@ -127,3 +127,16 @@ class ProvisionResponse(BaseModel):
     message: str
     data: Optional[Dict[str, Any]] = None
 
+
+class ProvisionFlowRequest(BaseModel):
+    """Request simplificado para provisionamiento completo"""
+    credentials: MikrotikCredentials
+    # Datos del lease
+    mac_address: str
+    ip_address: str
+    server: Optional[str] = None
+    # Datos de la queue
+    queue_name: str
+    max_limit: str  # Format: "upload/download" e.g., "500M/500M"
+    comment: Optional[str] = None
+
