@@ -427,24 +427,24 @@ class MikrotikClient:
             api = connection.get_api()
             lease_resource = api.get_resource('/ip/dhcp-server/lease')
 
-            # Buscar lease por MAC
-            leases = lease_resource.get(mac_address=mac_address)
-            
+            # Buscar lease por MAC (RouterOS usa guiones en los nombres de parámetros)
+            leases = lease_resource.get(**{'mac-address': mac_address})
+
             if leases:
                 # Si existe, actualizamos
                 lease_id = leases[0].get('.id')
-                
+
                 # Si es dinámico, hacerlo estático
                 if leases[0].get('dynamic') == 'true':
                     lease_resource.call('make-static', {'numbers': lease_id})
                     # Recargar ID o datos si es necesario, pero make-static suele mantener el ID
-                
-                # Actualizar datos
-                lease_resource.set(id=lease_id, address=ip_address, server=server, comment=comment)
+
+                # Actualizar datos (RouterOS usa guiones en los nombres de parámetros)
+                lease_resource.set(**{'.id': lease_id, 'address': ip_address, 'server': server, 'comment': comment})
                 action = "updated"
             else:
-                # Si no existe, creamos
-                lease_resource.add(mac_address=mac_address, address=ip_address, server=server, comment=comment)
+                # Si no existe, creamos (RouterOS usa guiones en los nombres de parámetros)
+                lease_resource.add(**{'mac-address': mac_address, 'address': ip_address, 'server': server, 'comment': comment})
                 action = "created"
 
             self.disconnect()
@@ -467,18 +467,18 @@ class MikrotikClient:
             queue_resource = api.get_resource('/queue/simple')
 
             # Buscar queue por nombre
-            queues = queue_resource.get(name=name)
+            queues = queue_resource.get(**{'name': name})
 
             if queues:
-                # Actualizar
+                # Actualizar (RouterOS usa guiones en los nombres de parámetros)
                 queue_id = queues[0].get('.id')
-                queue_resource.set(id=queue_id, target=target, max_limit=max_limit, comment=comment)
+                queue_resource.set(**{'.id': queue_id, 'target': target, 'max-limit': max_limit, 'comment': comment})
                 action = "updated"
             else:
-                # Crear
-                queue_resource.add(name=name, target=target, max_limit=max_limit, comment=comment)
+                # Crear (RouterOS usa guiones en los nombres de parámetros)
+                queue_resource.add(**{'name': name, 'target': target, 'max-limit': max_limit, 'comment': comment})
                 action = "created"
-            
+
             self.disconnect()
 
             return {
