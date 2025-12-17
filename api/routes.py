@@ -232,6 +232,7 @@ async def get_interfaces(credentials: MikrotikCredentials):
 
 
 
+
 @router.post("/dhcp/leases")
 async def get_dhcp_leases(credentials: MikrotikCredentials):
     """
@@ -245,31 +246,6 @@ async def get_dhcp_leases(credentials: MikrotikCredentials):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=result.get('message', 'Error al obtener leases DHCP')
-            )
-
-        return result
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error interno: {str(e)}"
-        )
-
-
-@router.post("/dhcp/servers")
-async def get_dhcp_servers(credentials: MikrotikCredentials):
-    """
-    Obtiene la lista de servidores DHCP disponibles
-    """
-    try:
-        client = MikrotikClient(credentials)
-        result = client.get_dhcp_servers()
-
-        if not result['success']:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.get('message', 'Error al obtener servidores DHCP')
             )
 
         return result
