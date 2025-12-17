@@ -447,6 +447,14 @@ class MikrotikClient:
             if existing_lease:
                 # Si existe, actualizamos
                 lease_id = existing_lease.get('.id')
+                
+                # Fallback: intentar con 'id' si '.id' no existe (por seguridad)
+                if not lease_id:
+                    lease_id = existing_lease.get('id')
+                
+                if not lease_id:
+                    # Si no hay ID, no podemos operar. Lanzamos error con detalles.
+                    raise Exception(f"No se pudo obtener el ID del lease para MAC {mac_address}. Datos: {existing_lease}")
 
                 # Si es dinámico, hacerlo estático primero
                 if existing_lease.get('dynamic') == 'true':
