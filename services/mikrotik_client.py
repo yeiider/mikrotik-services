@@ -384,6 +384,34 @@ class MikrotikClient:
         except Exception as e:
             return {'success': False, 'message': str(e)}
 
+    def get_dhcp_servers(self) -> Dict[str, Any]:
+        """Obtiene la lista de servidores DHCP"""
+        try:
+            connection = self.connect()
+            api = connection.get_api()
+
+            server_res = api.get_resource('/ip/dhcp-server')
+            servers_data = server_res.get()
+
+            self.disconnect()
+
+            servers = []
+            for s in servers_data:
+                servers.append({
+                    'name': s.get('name', ''),
+                    'interface': s.get('interface', ''),
+                    'lease_time': s.get('lease-time', ''),
+                    'address_pool': s.get('address-pool', '')
+                })
+
+            return {
+                'success': True,
+                'count': len(servers),
+                'servers': servers
+            }
+        except Exception as e:
+            return {'success': False, 'message': str(e)}
+
     def get_logs(self) -> Dict[str, Any]:
         """Obtiene logs del sistema"""
         try:
